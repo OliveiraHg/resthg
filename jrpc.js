@@ -179,7 +179,7 @@ return res.json({key:' ❌ Sua apikey é invalida!! ❌'})
 
 app.get('/api/add-key',(req, res) => {
 a = req.query.a
-if(!a.includes("&")) return res.json({resultado: "Faltando o and"})
+if(!a.includes("&")) return res.json({resultado: "faltando o and"})
 var [apikey, senha, rq] = a.split("&")
 var senhaofc = "gley"
 if(senha != senhaofc) return res.json({resultado: "Senha invalida.."})
