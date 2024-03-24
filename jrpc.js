@@ -1144,6 +1144,201 @@ TinyUrl.shorten(url, function(url, err) {
 }); 
 })
 
+app.get("/api/consultas:", async (req, res) => {
+//var type = req.query.type
+if(!type)return res.json({ status:false, resultado:'Cade o parametro type??'})
+//query = req.query.query
+if(!q)return res.json({ status:false, resultado:'Cade o parametro q??'})
+apikey = req.query.apikey
+if(!apikey)return res.json({ status:false, resultado:'Cade o parâmetro apikey??'})
+	var db = JSON.parse(fs.readFileSync("db.json"));
+    var achou2 = false;
+	const type = req.params.type.toLowerCase() || '';
+	const query = req.params.q.toLowerCase() || '';
+ if (!query) return res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[❌] Ensira o tipo de consulta [❌]"
+               }
+             })
+ if (type.search(/cpf|cpf1|cpf2|cpf3|cpf4|cpf5|cpf6|cpf7||cpf8tel|tel1|tel2|cnpj|score|nome|nome1|nome2|nome3|nome4|parentes|beneficios|placa|placa1|placa2|vizinhos|site|ip|cep|cep1|bin|email1|email2|vacina|vacina1|vacina2|rg|fotorj|fotocr|chassi|vazou|mae|pai|pix|cns|html|motor|nascimento/) === -1) return res.send('Tipo de consulta invalida');
+	console.log(`[CONSULTA] : ${type} = ${query}`);
+	if (db && db[type] && db[type][query]) return res.send(db[type][query]);
+
+	const Consultar = {
+		nego() {
+			if (query.length != 11) return res.json({err:'O CPF deve conter 11 digitos!'})
+
+			telegram.sendMessage(Grupos[0].chat, {
+				message: `/cpf2 ${query}`
+			})
+				.catch((e) => res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[❌] Não foi possível fazer consulta.[❌]"
+               }
+             })
+				);
+		}
+	}
+	if (Consultar[type]) Consultar[type]();
+	else await telegram.sendMessage(Grupos[0].chat, {
+		message: `/${type} ${query}`
+	})
+		.catch((e) =>{
+			res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[❌] Não foi possível fazer consulta.[❌]"
+               }
+             })
+
+			console.log("DEBUG NO CÓDIGO:",e)
+		});
+	async function OnMsg(event) {
+		const message = event.message;
+		const textPure =
+			message && message.text ?
+			message.text :
+			message && message.message ?
+			message.message : '';
+		const text =
+			message && message.text ?
+			message.text.toLowerCase() :
+			message && message.message ?
+			message.message.toLowerCase() : '';
+		const msgMarked = await message.getReplyMessage();
+		const msgMarkedText =
+			msgMarked && msgMarked.text ?
+			msgMarked.text.toLowerCase() :
+			msgMarked && msgMarked.message ?
+			msgMarked.message.toLowerCase() : '';
+		const sender = await message.getSender();
+		const senderId = sender && sender.username ? sender.username : '';
+		const chat = await message.getChat();
+		const chatId = chat && chat.username ? chat.username : '';
+		msgggveri = msgMarkedText.replace(/\/|-|\.|\`|\*/g, '').toLowerCase()
+				queryverii = query.replace(/\/|-|\.|\`|\*/g, '').toLowerCase()
+				txtuuuveri = text.replace(/\/|-|\.|\`|\*/g, '').toLowerCase()
+		for (let i of Grupos) {
+			try {
+				if ((chatId == i.chat && senderId == i.bot) && (msgggveri.includes(queryverii) || txtuuuveri.includes(queryverii) )) {
+					achou2 = true;
+					await telegram.markAsRead(chat);
+					//console.log(`text: ${textPure}, msgMarked: ${msgMarkedText}`)
+					if (text.includes("⚠️"))return res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[⚠️] NÃO ENCONTRANDO! [⚠️]"
+               }
+             })
+					if (text.includes("Inválido") || text.includes("INVÁLIDO"))
+						res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[⚠️] INVALIDO! [⚠️]"
+               }
+             })
+
+				}
+
+				if ((chatId == i.chat && senderId == i.bot) && (msgggveri.includes(queryverii) || txtuuuveri.includes(queryverii) )) {
+					achou2 = true;
+					await telegram.markAsRead(chat);
+					let str = textPure;
+					str = str.replace(/\*/gi, "");
+					str = str.replace(/\`/gi, "");
+					str = str.replace(/\+/gi, "");
+					str = str.replace(/\[/gi, "");
+					str = str.replace(/\]/gi, "");
+					str = str.replace(/\(/gi, "");
+					str = str.replace(/\)/gi, "");
+					str = str.replace(/\•/gi, "");
+					str = str.replace(/\n\n\n/gi, "\n\n");
+					str = str.replace(/CONSULTA DE CPF 2 \n\n/gi, "CONSULTA DE CPF ");
+					str = str.replace(/🔍 CONSULTA DE CPF1 COMPLETA 🔍/gi, "CONSULTA DE CPF ");
+					str = str.replace(/🔍 CONSULTA DE CPF3 COMPLETA 🔍/gi, "CONSULTA DE CPF ");
+					str = str.replace(/🔍 CONSULTA DE CPF 4 🔍/gi, "CONSULTA DE CPF ");
+                    str = str.replace(/BY: @MkBuscasRobot/gi, "");
+					str = str.replace(/\n\nUSUÁRIO: NT CONSULTA/gi, '');
+					str = str.replace(/USUÁRIO: NT CONSULTA\n\n/gi, '');
+					str = str.replace(/ USUÁRIO: NT CONSULTA/gi, '');
+					str = str.replace(/🔍|V1|V2/gi, '');
+					str = str.replace(/COMPLETA/gi, '');
+					str = str.replace(/CONSULTA DE CPF 2/gi, 'CONSULTA DE CPF');
+					str = str.replace(/\n  \n𝘶𝘴𝘦𝘳: gleysonBots\n𝘣𝘺: @Noxbuscabot/gi, "");
+					str = str.replace(/\n\n𝘶𝘴𝘦𝘳: gleysonBots\n𝘣𝘺: @Noxbuscabot/gi, '');
+					str = str.replace(/REF: @refmkbuscas/gi, '');
+					str = str.replace(/EMPTY/gi, "");
+					str = str.replace(/\n\n\n\n/gi, "\n\n");
+					str = str.replace(/USUÁRIO: NT CONSULTA/gi, '');
+					str = str.replace(/COMPLETA/gi, '');
+					str = str.replace(/𝗖𝗢𝗡𝗦𝗨𝗟𝗧𝗔 𝗗𝗘 𝗖𝗣𝗙\n\n/gi, '');
+					str = str.replace(/𝗖𝗢𝗡𝗦𝗨𝗟𝗧𝗔 𝗗𝗘 𝗣𝗟𝗔𝗖𝗔\n\n/gi, '');
+					str = str.replace(/𝗖𝗢𝗡𝗦𝗨𝗟𝗧𝗔 𝗗𝗘 𝗧𝗘𝗟𝗘𝗙𝗢𝗡𝗘\n\n/gi, '');
+					str = str.replace(/𝗖𝗢𝗡𝗦𝗨𝗟𝗧𝗔 𝗗𝗘 𝗡𝗢𝗠𝗘\n\n/gi, '');
+
+
+
+
+					let json = {};
+					const linhas = str.split("\n");
+					for (const t of linhas) {
+						const key = t.split(": ");
+						key[0] = key[0]
+							.replace(/\//g, " ")
+							.toLowerCase()
+							.replace(/(?:^|\s)\S/g, function (a) {
+								return a.toUpperCase();
+							})
+							.replace(/ |•|-|•|/g, "");
+						json[key[0]] = key[1];
+					}
+					if (db && db[type]) db[type][query] = str;
+					else db[type] = {}, db[type][query] = str;
+					fs.writeFileSync("db.json", JSON.stringify(db, null, "\t"));
+
+
+					res.json({
+                 status: true,
+
+               "resultado": {
+               str
+               }
+             })
+				}
+				return;
+			} catch (e) {
+				if (achou2) return;
+				res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[❌]error no servidor, não foi possivel fazer a consulta[❌]"
+               }
+             })
+				console.log(e);
+			}
+		}
+	}
+	telegram.addEventHandler(OnMsg, new NewMessage({}));
+	setTimeout(() => {
+		if (achou2) return;
+		res.json({
+                 status: true,
+
+               "resultado": {
+               "str": "[⏳]servidor demorou muito para responder[⏳]"
+               }
+             })
+	}, 90000);
+});
+
 app.get('/shortlink/cuttly', async (req, res, next) => {
 apikey = req.query.apikey
 if(key[key.map(i => i?.apikey)?.indexOf(apikey)]?.request <= 0) return res.sendFile(path.join(__dirname, "./public/", "limited.html"))
