@@ -48,6 +48,7 @@
     "cors": "^2.8.5",
     "zrapi": "^0.0.6",
     "google-img-scrap": "^1.0.6",
+    "xfarr-api": "^2.0.0",
     "form-data": "^4.0.0",
     "chalk": "^4.1.2",
     "node-webpmux": "^3.1.1",
